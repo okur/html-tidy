@@ -1,16 +1,16 @@
-rofs: rofs.c
-	gcc rofs.c -o rofs -Wall -ansi -W -std=c99 -g -ggdb -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -lfuse
+website: website.c
+	gcc website.c -o website -Wall -ansi -W -std=c99 -g -ggdb -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -lfuse -ltidy
 
 mount:
-	./rofs -d test1 test2
+	./website -d test1 test2
 
 clean:
-	rm rofs
+	rm website
 
 umount:
 	fusermount -u test2
 
 remount: 
-	gcc rofs.c -o rofs -Wall -ansi -W -std=c99 -g -ggdb -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -lfuse
+	gcc website.c -o website -Wall -ansi -W -std=c99 -g -ggdb -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -lfuse -ltidy
 	fusermount -u test2
-	./rofs -d test1 test2 &
+	./website -d test1 test2 &

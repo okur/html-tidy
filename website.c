@@ -1,26 +1,4 @@
-/*
- * ROFS - The read-only filesystem for FUSE.
- * Copyright 2005,2006,2008 Matthew Keller. kellermg@potsdam.edu and others.
- * v2008.09.24
- *
- * Mount any filesytem, or folder tree read-only, anywhere else.
- * No warranties. No guarantees. No lawyers.
- *
- * I read (and borrowed) a lot of other FUSE code to write this.
- * Similarities possibly exist- Wholesale reuse as well of other GPL code.
- * Special mention to Rémi Flament and his loggedfs.
- *
- * Consider this code GPLv2.
- *
- * Compile: gcc rofs.c -o rofs -Wall -ansi -W -std=c99 -g -ggdb -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -lfuse 
- * Mount: rofs readwrite_filesystem mount_point
- *
- */
-
-
 #define FUSE_USE_VERSION 26
-
-static const char* rofsVersion = "2008.09.24";
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -45,9 +23,10 @@ static const char* rofsVersion = "2008.09.24";
 // Global to store our read-write path
 char *rw_path;
 
+// Global to size of buffer 
 int size_buffer = 0;
 
-// Translate an rofs path into it's underlying filesystem path
+// Translate an website path into it's underlying filesystem path
 static char* translate_path(const char* path)
 {
 
@@ -65,7 +44,7 @@ void tidy(char * buf){
   TidyBuffer output = {0};
   TidyDoc Doc = tidyCreate();
   tidyOptSetBool(Doc, TidyXhtmlOut, yes);
-  tidyOptSetInt(Doc, TidyIndentContent, 1);
+  tidyOptSetInt(Doc, TidyIndentContent, yes);
   tidyOptSetInt(Doc, TidyIndentSpaces, 4);
   tidyParseString(Doc, buf); 
   tidyOptSetBool(Doc, TidyForceOutput, yes);  
@@ -76,15 +55,9 @@ void tidy(char * buf){
   tidyBufFree(&output);
   tidyRelease(Doc);
 }
-/******************************
-*
-* Callbacks for FUSE
-*
-*
-*
-******************************/
+
 //File Attributes
-static int rofs_getattr(const char *path, struct stat *st_data)
+static int website_getattr(const char *path, struct stat *st_data)
 {
     int res;
     char *upath=translate_path(path);
@@ -98,7 +71,7 @@ static int rofs_getattr(const char *path, struct stat *st_data)
     return 0;
 }
 
-static int rofs_readlink(const char *path, char *buf, size_t size)
+static int website_readlink(const char *path, char *buf, size_t size)
 {
     int res;
     char *upath=translate_path(path);
@@ -112,7 +85,7 @@ static int rofs_readlink(const char *path, char *buf, size_t size)
     return 0;
 }
 
-static int rofs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,off_t offset, struct fuse_file_info *fi)
+static int website_readdir(const char *path, void *buf, fuse_fill_dir_t filler,off_t offset, struct fuse_file_info *fi)
 {
     DIR *dp;
     struct dirent *de;
@@ -143,7 +116,7 @@ static int rofs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,off_
     return 0;
 }
 
-static int rofs_mknod(const char *path, mode_t mode, dev_t rdev)
+static int website_mknod(const char *path, mode_t mode, dev_t rdev)
 {
     (void)path;
     (void)mode;
@@ -151,47 +124,47 @@ static int rofs_mknod(const char *path, mode_t mode, dev_t rdev)
     return -EROFS;
 }
 
-static int rofs_mkdir(const char *path, mode_t mode)
+static int website_mkdir(const char *path, mode_t mode)
 {
     (void)path;
     (void)mode;
     return -EROFS;
 }
 
-static int rofs_unlink(const char *path)
+static int website_unlink(const char *path)
 {
     (void)path;
     return -EROFS;
 }
 
-static int rofs_rmdir(const char *path)
+static int website_rmdir(const char *path)
 {
     (void)path;
     return -EROFS;
 }
 
-static int rofs_symlink(const char *from, const char *to)
+static int website_symlink(const char *from, const char *to)
 {
     (void)from;
     (void)to;
     return -EROFS;
 }
 
-static int rofs_rename(const char *from, const char *to)
+static int website_rename(const char *from, const char *to)
 {
     (void)from;
     (void)to;
     return -EROFS;
 }
 
-static int rofs_link(const char *from, const char *to)
+static int website_link(const char *from, const char *to)
 {
     (void)from;
     (void)to;
     return -EROFS;
 }
 
-static int rofs_chmod(const char *path, mode_t mode)
+static int website_chmod(const char *path, mode_t mode)
 {
     (void)path;
     (void)mode;
@@ -199,7 +172,7 @@ static int rofs_chmod(const char *path, mode_t mode)
 
 }
 
-static int rofs_chown(const char *path, uid_t uid, gid_t gid)
+static int website_chown(const char *path, uid_t uid, gid_t gid)
 {
     (void)path;
     (void)uid;
@@ -207,21 +180,21 @@ static int rofs_chown(const char *path, uid_t uid, gid_t gid)
     return -EROFS;
 }
 
-static int rofs_truncate(const char *path, off_t size)
+static int website_truncate(const char *path, off_t size)
 {
     (void)path;
     (void)size;
     return -EROFS;
 }
 
-static int rofs_utime(const char *path, struct utimbuf *buf)
+static int website_utime(const char *path, struct utimbuf *buf)
 {
     (void)path;
     (void)buf;
     return -EROFS;
 }
 
-static int rofs_open(const char *path, struct fuse_file_info *finfo)
+static int website_open(const char *path, struct fuse_file_info *finfo)
 {
     int res;
 
@@ -246,7 +219,7 @@ static int rofs_open(const char *path, struct fuse_file_info *finfo)
     return 0;
 }
 //Reading from a file
-static int rofs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *finfo)
+static int website_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *finfo)
 {
     int fd;
     int res;
@@ -275,7 +248,7 @@ static int rofs_read(const char *path, char *buf, size_t size, off_t offset, str
     return res;
 }
 
-static int rofs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *finfo)
+static int website_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *finfo)
 {
     (void)path;
     (void)buf;
@@ -285,7 +258,7 @@ static int rofs_write(const char *path, const char *buf, size_t size, off_t offs
     return -EROFS;
 }
 
-static int rofs_statfs(const char *path, struct statvfs *st_buf)
+static int website_statfs(const char *path, struct statvfs *st_buf)
 {
     int res;
     char *upath=translate_path(path);
@@ -298,14 +271,14 @@ static int rofs_statfs(const char *path, struct statvfs *st_buf)
     return 0;
 }
 
-static int rofs_release(const char *path, struct fuse_file_info *finfo)
+static int website_release(const char *path, struct fuse_file_info *finfo)
 {
     (void) path;
     (void) finfo;
     return 0;
 }
 
-static int rofs_fsync(const char *path, int crap, struct fuse_file_info *finfo)
+static int website_fsync(const char *path, int crap, struct fuse_file_info *finfo)
 {
     (void) path;
     (void) crap;
@@ -313,7 +286,7 @@ static int rofs_fsync(const char *path, int crap, struct fuse_file_info *finfo)
     return 0;
 }
 
-static int rofs_access(const char *path, int mode)
+static int website_access(const char *path, int mode)
 {
     int res;
     char *upath=translate_path(path);
@@ -335,7 +308,7 @@ static int rofs_access(const char *path, int mode)
 /*
  * Set the value of an extended attribute
  */
-static int rofs_setxattr(const char *path, const char *name, const char *value, size_t size, int flags)
+static int website_setxattr(const char *path, const char *name, const char *value, size_t size, int flags)
 {
     (void)path;
     (void)name;
@@ -348,7 +321,7 @@ static int rofs_setxattr(const char *path, const char *name, const char *value, 
 /*
  * Get the value of an extended attribute.
  */
-static int rofs_getxattr(const char *path, const char *name, char *value, size_t size)
+static int website_getxattr(const char *path, const char *name, char *value, size_t size)
 {
     int res;
 
@@ -364,7 +337,7 @@ static int rofs_getxattr(const char *path, const char *name, char *value, size_t
 /*
  * List the supported extended attributes.
  */
-static int rofs_listxattr(const char *path, char *list, size_t size)
+static int website_listxattr(const char *path, char *list, size_t size)
 {
     int res;
 
@@ -381,7 +354,7 @@ static int rofs_listxattr(const char *path, char *list, size_t size)
 /*
  * Remove an extended attribute.
  */
-static int rofs_removexattr(const char *path, const char *name)
+static int website_removexattr(const char *path, const char *name)
 {
     (void)path;
     (void)name;
@@ -389,63 +362,48 @@ static int rofs_removexattr(const char *path, const char *name)
 
 }
 
-struct fuse_operations rofs_oper = {
-    .getattr     = rofs_getattr,
-    .readlink    = rofs_readlink,
-    .readdir     = rofs_readdir,
-    .mknod       = rofs_mknod,
-    .mkdir       = rofs_mkdir,
-    .symlink     = rofs_symlink,
-    .unlink      = rofs_unlink,
-    .rmdir       = rofs_rmdir,
-    .rename      = rofs_rename,
-    .link        = rofs_link,
-    .chmod       = rofs_chmod,
-    .chown       = rofs_chown,
-    .truncate    = rofs_truncate,
-    .utime       = rofs_utime,
-    .open        = rofs_open,
-    .read        = rofs_read,
-    .write       = rofs_write,
-    .statfs      = rofs_statfs,
-    .release     = rofs_release,
-    .fsync       = rofs_fsync,
-    .access      = rofs_access,
+struct fuse_operations website_oper = {
+    .getattr     = website_getattr,
+    .readlink    = website_readlink,
+    .readdir     = website_readdir,
+    .mknod       = website_mknod,
+    .mkdir       = website_mkdir,
+    .symlink     = website_symlink,
+    .unlink      = website_unlink,
+    .rmdir       = website_rmdir,
+    .rename      = website_rename,
+    .link        = website_link,
+    .chmod       = website_chmod,
+    .chown       = website_chown,
+    .truncate    = website_truncate,
+    .utime       = website_utime,
+    .open        = website_open,
+    .read        = website_read,
+    .write       = website_write,
+    .statfs      = website_statfs,
+    .release     = website_release,
+    .fsync       = website_fsync,
+    .access      = website_access,
 
     /* Extended attributes support for userland interaction */
-    .setxattr    = rofs_setxattr,
-    .getxattr    = rofs_getxattr,
-    .listxattr   = rofs_listxattr,
-    .removexattr = rofs_removexattr
+    .setxattr    = website_setxattr,
+    .getxattr    = website_getxattr,
+    .listxattr   = website_listxattr,
+    .removexattr = website_removexattr
 };
 enum {
     KEY_HELP,
     KEY_VERSION,
 };
 
-static void usage(const char* progname)
-{
-    fprintf(stdout,
-            "usage: %s readwritepath mountpoint [options]\n"
-            "\n"
-            "   Mounts readwritepath as a read-only mount at mountpoint\n"
-            "\n"
-            "general options:\n"
-            "   -o opt,[opt...]     mount options\n"
-            "   -h  --help          print help\n"
-            "   -V  --version       print version\n"
-            "\n", progname);
-}
 
-static int rofs_parse_opt(void *data, const char *arg, int key,
+static int website_parse_opt(void *data, const char *arg, int key,
                           struct fuse_args *outargs)
 {
     (void) data;
-
-    switch (key)
+    if(key == FUSE_OPT_KEY_NONOPT)
     {
-    case FUSE_OPT_KEY_NONOPT:
-        if (rw_path == 0)
+    	if (rw_path == 0)
         {
             rw_path = strdup(arg);
             return 0;
@@ -454,49 +412,38 @@ static int rofs_parse_opt(void *data, const char *arg, int key,
         {
             return 1;
         }
-    case FUSE_OPT_KEY_OPT:
-        return 1;
-    case KEY_HELP:
-        usage(outargs->argv[0]);
-        exit(0);
-    case KEY_VERSION:
-        fprintf(stdout, "ROFS version %s\n", rofsVersion);
-        exit(0);
-    default:
-        fprintf(stderr, "see `%s -h' for usage\n", outargs->argv[0]);
-        exit(1);
     }
-    return 1;
+    else if(key == FUSE_OPT_KEY_OPT)
+    	return 1;
+    else
+    	exit(1);
 }
 
-static struct fuse_opt rofs_opts[] = {
-    FUSE_OPT_KEY("-h",          KEY_HELP),
-    FUSE_OPT_KEY("--help",      KEY_HELP),
-    FUSE_OPT_KEY("-V",          KEY_VERSION),
-    FUSE_OPT_KEY("--version",   KEY_VERSION),
+static struct fuse_opt website_opts[] = {
     FUSE_OPT_END
 };
 
 int main(int argc, char *argv[])
 {
+	
     struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+    
     int res;
 
-    res = fuse_opt_parse(&args, &rw_path, rofs_opts, rofs_parse_opt);
+    res = fuse_opt_parse(&args, &rw_path, website_opts, website_parse_opt);
     if (res != 0)
     {
+        printf("Invalid arguments\n");
         fprintf(stderr, "Invalid arguments\n");
-        fprintf(stderr, "see `%s -h' for usage\n", argv[0]);
         exit(1);
     }
     if (rw_path == 0)
     {
+        printf("missing arguments\n");
         fprintf(stderr, "Missing readwritepath\n");
-        fprintf(stderr, "see `%s -h' for usage\n", argv[0]);
         exit(1);
     }
-
-    fuse_main(args.argc, args.argv, &rofs_oper, NULL);
-
+    
+    fuse_main(args.argc, args.argv, &website_oper, NULL);
     return 0;
 }
