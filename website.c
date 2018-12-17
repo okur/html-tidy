@@ -29,15 +29,11 @@ int size_buffer = 0;
 void tidy(char * buf){
   TidyBuffer output = {0};
   TidyDoc Doc = tidyCreate();
-  tidyOptSetBool(Doc, TidyXhtmlOut, yes);
-  tidyOptSetInt(Doc, TidyIndentContent, yes);
-  tidyOptSetInt(Doc, TidyIndentSpaces, 4);
+  tidyLoadConfig(Doc, "config.txt");
   tidyParseString(Doc, buf); 
-  tidyOptSetBool(Doc, TidyForceOutput, yes);  
-  tidySaveBuffer(Doc, &output );
+  tidyCleanAndRepair(Doc);
+  tidySaveBuffer(Doc, &output);
   strcpy(buf, output.bp);
-  //printf("%s", buf);
-  //printf("%d\n", output.size);
   tidyBufFree(&output);
   tidyRelease(Doc);
 }
@@ -80,6 +76,7 @@ static int website_getattr(const char *path, struct stat *st_data)
 
 static int website_readlink(const char *path, char *buf, size_t size)
 {
+
     int res;
     char *upath=translate_path(path);
 
