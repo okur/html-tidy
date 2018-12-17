@@ -6,15 +6,11 @@
 void tidy(char * buf){
   TidyBuffer output = {0};
   TidyDoc Doc = tidyCreate();
-  tidyOptSetBool(Doc, TidyXhtmlOut, yes);
-  tidyOptSetInt(Doc, TidyIndentContent, 1);
-  tidyOptSetInt(Doc, TidyIndentSpaces, 4);
+  tidyLoadConfig(Doc, "config.txt");
   tidyParseString(Doc, buf); 
-  tidyOptSetBool(Doc, TidyForceOutput, yes);  
-  tidySaveBuffer(Doc, &output );
+  tidyCleanAndRepair(Doc);
+  tidySaveBuffer(Doc, &output);
   strcpy(buf, output.bp);
-  printf("%s", buf);
-  printf("%d\n", output.size);
   tidyBufFree(&output);
   tidyRelease(Doc);
   return;
