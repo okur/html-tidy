@@ -197,10 +197,6 @@ static int website_utime(const char *path, struct utimbuf *buf)
 static int website_open(const char *path, struct fuse_file_info *finfo)
 {
     int res;
-
-    /* We allow opens, unless they're tring to write, sneaky
-     * people.
-     */
     int flags = finfo->flags;
 
     if ((flags & O_WRONLY) || (flags & O_RDWR) || (flags & O_CREAT) || (flags & O_EXCL) || (flags & O_TRUNC) || (flags & O_APPEND)) {
