@@ -26,20 +26,6 @@ char *rw_path;
 // Global to size of buffer 
 int size_buffer = 0;
 
-// Translate an website path into it's underlying filesystem path
-static char* translate_path(const char* path)
-{
-
-    char *rPath= malloc(sizeof(char)*(strlen(path)+strlen(rw_path)+1));
-
-    strcpy(rPath,rw_path);
-    if (rPath[strlen(rPath)-1]=='/') {
-        rPath[strlen(rPath)-1]='\0';
-    }
-    strcat(rPath,path);
-
-    return rPath;
-}
 void tidy(char * buf){
   TidyBuffer output = {0};
   TidyDoc Doc = tidyCreate();
@@ -60,6 +46,21 @@ int get_extension(const char *filename) {
     if(!dot) return 0;
     if(!strcmp(dot, ".html")) return 1;
     else return 0;
+}
+
+
+static char* translate_path(const char* path)
+{
+	printf("\n\n\n %s\n", path);
+    char *rPath= malloc(sizeof(char)*(strlen(path)+strlen(rw_path)+1));
+
+    strcpy(rPath,rw_path);
+    if (rPath[strlen(rPath)-1]=='/') {
+        rPath[strlen(rPath)-1]='\0';
+    }
+    strcat(rPath,path);
+    printf("rPath: %s\n\n\n\n ", rPath);
+    return rPath;
 }
 
 //File Attributes
@@ -282,22 +283,11 @@ static int website_release(const char *path, struct fuse_file_info *finfo)
     return 0;
 }
 
-static int website_fsync(const char *path, int crap, struct fuse_file_info *finfo)
-{
-    (void) path;
-    (void) crap;
-    (void) finfo;
-    return 0;
-}
-
 static int website_access(const char *path, int mode)
 {
     int res;
     char *upath=translate_path(path);
 
-    /* Don't pretend that we allow writing
-     * Chris AtLee <chris@atlee.ca>
-     */
     if (mode & W_OK)
         return -EROFS;
 
@@ -307,63 +297,6 @@ static int website_access(const char *path, int mode)
         return -errno;
     }
     return res;
-}
-
-/*
- * Set the value of an extended attribute
- */
-static int website_setxattr(const char *path, const char *name, const char *value, size_t size, int flags)
-{
-    (void)path;
-    (void)name;
-    (void)value;
-    (void)size;
-    (void)flags;
-    return -EROFS;
-}
-
-/*
- * Get the value of an extended attribute.
- */
-static int website_getxattr(const char *path, const char *name, char *value, size_t size)
-{
-    int res;
-
-    char *upath=translate_path(path);
-    res = lgetxattr(upath, name, value, size);
-    free(upath);
-    if(res == -1) {
-        return -errno;
-    }
-    return res;
-}
-
-/*
- * List the supported extended attributes.
- */
-static int website_listxattr(const char *path, char *list, size_t size)
-{
-    int res;
-
-    char *upath=translate_path(path);
-    res = llistxattr(upath, list, size);
-    free(upath);
-    if(res == -1) {
-        return -errno;
-    }
-    return res;
-
-}
-
-/*
- * Remove an extended attribute.
- */
-static int website_removexattr(const char *path, const char *name)
-{
-    (void)path;
-    (void)name;
-    return -EROFS;
-
 }
 
 struct fuse_operations website_oper = {
@@ -386,25 +319,14 @@ struct fuse_operations website_oper = {
     .write       = website_write,
     .statfs      = website_statfs,
     .release     = website_release,
-    .fsync       = website_fsync,
     .access      = website_access,
-
-    /* Extended attributes support for userland interaction */
-    .setxattr    = website_setxattr,
-    .getxattr    = website_getxattr,
-    .listxattr   = website_listxattr,
-    .removexattr = website_removexattr
 };
-enum {
-    KEY_HELP,
-    KEY_VERSION,
-};
-
 
 static int website_parse_opt(void *data, const char *arg, int key,
                           struct fuse_args *outargs)
 {
-    (void) data;
+    (void)data;
+    (void)outargs;
     if(key == FUSE_OPT_KEY_NONOPT)
     {
     	if (rw_path == 0)
