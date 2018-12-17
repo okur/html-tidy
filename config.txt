@@ -1,0 +1,3 @@
+output-xhtml: yes
+indent: yes
+indent-spaces: 4
