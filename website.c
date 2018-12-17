@@ -55,6 +55,12 @@ void tidy(char * buf){
   tidyBufFree(&output);
   tidyRelease(Doc);
 }
+int get_extension(const char *filename) {
+    const char *dot = strrchr(filename, '.');
+    if(!dot) return 0;
+    if(!strcmp(dot, ".html")) return 1;
+    else return 0;
+}
 
 //File Attributes
 static int website_getattr(const char *path, struct stat *st_data)
@@ -231,16 +237,18 @@ static int website_read(const char *path, char *buf, size_t size, off_t offset, 
 	memset(buf, '\0', size_buffer);
     res = pread(fd, buf, size, offset);
     close(fd);
-    printf("%s", buf);
-	char * temp = buf;
-	tidy(temp);
-	buf = temp;
-	size_buffer  = strlen(buf);
-	res = strlen(buf);
+
+    if(get_extension(path))
+    {
+		char * temp = buf;
+		tidy(temp);
+		buf = temp;
+		size_buffer  = strlen(buf);
+		res = strlen(buf);	
+	}
     if(res == -1) {
         res = -errno;
     }
-    //close(fd);
     return res;
 }
 
