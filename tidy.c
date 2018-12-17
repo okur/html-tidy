@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-
 void tidy(char * buf){
   TidyBuffer output = {0};
   TidyDoc Doc = tidyCreate();
